@@ -14,7 +14,7 @@
 		public static function getTableColumns($db, $table){
 			$query = 'SHOW COLUMNS FROM '.$table;
 			$con = $db->prepare($query);
-			$stmt = $con->execute();
+			$con->execute();
 			$getTtableColumns = [];
 			while($row = $con->fetch(PDO::FETCH_ASSOC)){
 				$getTableColumns[] = ($row['Field']);
@@ -92,7 +92,21 @@
 				$cond = $rowCount >= 1;
 				return $cond ? self::$response = ['status'=>'1', 'message'=>'Already Exist'] : self::$response = ['status'=>'0', 'message'=>'Error Occured'];
 			}else{
-				return self::$response = ['status'=>'0', 'message'=>'Not Found(Exist)'];;
+				return self::$response = ['status'=>'0', 'message'=>'Not Found(Exist)'];
+			}
+		}
+
+		public static function delete($db, $table, $values){
+			if(self::isExist($db, $table, $values)){
+				$condition = self::$values_keys[0].' = "'.self::$values_values[0].'"';
+				$query = 'DELETE FROM '.$table.' WHERE '.$condition;
+				$con = $db->prepare($query);
+				$response = $con->execute();
+				if($response){
+					return self::$response = ['status'=>'1', 'message'=>'Deleted successfully'];
+				}else{
+					return self::$response = ['status'=>'0', 'message'=>'Error Occured'];
+				}
 			}
 		}
 	} //class ends
