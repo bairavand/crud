@@ -1,7 +1,9 @@
 <?php
 	/**
      * @param Library for CRUD operation
+     *********************************************************************************
      * @param v1.0 Beta
+     *********************************************************************************
      * @param Copyright © 2018 PyRu Inc.
      */
 	class DB{
@@ -15,7 +17,7 @@
 			$query = 'SHOW COLUMNS FROM '.$table;
 			$con = $db->prepare($query);
 			$con->execute();
-			$getTtableColumns = [];
+			$getTableColumns = [];
 			while($row = $con->fetch(PDO::FETCH_ASSOC)){
 				$getTableColumns[] = ($row['Field']);
 			}
