@@ -1,0 +1,8 @@
+{
+    "name": "pyru/crud",
+    "description": "A simple PHP library for MySQL CRUD operation",
+    "require": {
+        "php": "^7.0"
+    }
+}
+
