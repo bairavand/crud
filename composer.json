@@ -1,6 +1,7 @@
 {
     "name": "pyru/crud",
     "description": "A simple PHP library for MySQL CRUD operation",
+    "minimum-stability": "dev",
     "require": {
         "php": "^7.0"
     }
