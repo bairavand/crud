@@ -3,6 +3,11 @@
     "description": "A simple PHP library for MySQL CRUD operation",
     "require": {
         "php": "^7.0"
-    }
+    },
+    "source": {
+                    "url": "https://github.com/pairavanvvl/crud.git",
+                    "type": "git",
+                    "reference":"master"
+                }
 }
 
