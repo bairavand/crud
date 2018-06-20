@@ -1,6 +1,7 @@
 {
     "name": "pyru/crud",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "type": "library",
     "description": "A simple PHP library for MySQL CRUD operation",
     "keywords": ["CRUD","MySQL", "PHP"],
