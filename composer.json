@@ -20,6 +20,14 @@
         "psr-0": {
             "Monolog": "src"
         }
-    }
+    },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+     }
+   },
+  "replace": {
+    "pyru/crud": "self.version"
+  }
 }
 
