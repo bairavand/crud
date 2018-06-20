@@ -1,7 +1,7 @@
 {
     "name": "pyru/crud",
     "type": "library",
-    "pyru/crud": "^0.2.11",
+    "version": "1.0",
     "description": "A simple PHP library for MySQL CRUD operation",
     "keywords": ["CRUD","MySQL", "PHP"],
     "homepage": "https://github.com/pairavanvvl/crud",
@@ -27,7 +27,7 @@
      }
    },
   "replace": {
-    "pyru/crud": "self.version"
+    "pyru/crud": "1.0"
   }
 }
 
