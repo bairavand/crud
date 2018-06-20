@@ -1,6 +1,5 @@
 {
     "name": "pyru/crud",
-    "minimum-stability": "stable",
     "type": "library",
     "description": "A simple PHP library for MySQL CRUD operation",
     "keywords": ["CRUD","MySQL", "PHP"],
@@ -15,8 +14,6 @@
         }
     ],
     "require": {
-        "A": "dev-master",
-        "B": "@dev"
     },
     "autoload": {
         "psr-0": {
