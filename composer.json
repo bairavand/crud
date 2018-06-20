@@ -3,7 +3,7 @@
     "minimum-stability": "dev",
     "type": "library",
     "description": "A simple PHP library for MySQL CRUD operation",
-    "keywords": ["log","logging"],
+    "keywords": ["CRUD","MySQL", "PHP"],
     "homepage": "https://github.com/pairavanvvl/crud",
     "license": "MIT",
     "authors": [
