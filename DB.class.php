@@ -83,8 +83,6 @@
 				
 				$dataValues = implode(', ', $dataValues);
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-				print_r($query);
-				exit;
 				$con 		= $this->db->prepare($query);
 				$con1 		= $con->execute();
 			}
