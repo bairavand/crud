@@ -2,7 +2,7 @@
 	/**
      * @param Library for CRUD operation
      *********************************************************************************
-     * @param v2.0 Beta
+     * @param v2.1 Beta
      *********************************************************************************
      * @param Copyright © 2018 PyRu Inc.
      */
@@ -13,6 +13,8 @@
 		private $data;
 		private $encrypt 	= 0;
 		private $encryptKey = 'DEFAULT';
+		private $isEncryptColumns = 0;
+		private $encryptColumns = [];
 		private $dataKeys;
 		private $dataValues;
 		private $newValues;
@@ -53,14 +55,40 @@
 			$this->encryptKey = $key;
 		}
 
-		public function create(){
-			if($this->encrypt){
+		public function encryptColumns($encryptColumns){
+			$this->isEncryptColumns = 1;
+			if(is_array($encryptColumns))
+				$this->encryptColumns = $encryptColumns;
+			else
+				$this->encryptColumns[] = $encryptColumns;
+		}
+
+		public function insert(){
+			if(!$this->encrypt){
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
 				$dataValues = "AES_ENCRYPT('".implode("', '$this->encryptKey'), AES_ENCRYPT('", $this->dataValues)."', '$this->encryptKey')"; //comma and quoted values
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
 				$con 		= $this->db->prepare($query);
 				$con1 		= $con->execute();
 			}
+			if($this->encrypt && $this->isEncryptColumns){
+				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
+				$dataValues = [];
+				foreach($this->dataKeys as $dataKey){
+					if(in_array($dataKey, $this->encryptColumns))
+						$dataValues[] = 'AES_ENCRYPT(\''.$this->data[$dataKey].'\', \''.$this->encryptKey.'\')';
+					else
+						$dataValues[] = '\''.$this->data[$dataKey].'\'';
+				}
+				
+				$dataValues = implode(', ', $dataValues);
+				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
+				print_r($query);
+				exit;
+				$con 		= $this->db->prepare($query);
+				$con1 		= $con->execute();
+			}
+
 			else{
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
 				$dataValues = '\''.implode('\', \'', $this->dataValues).'\''; //comma and quoted values
@@ -145,4 +173,5 @@
 			}
 		}
 	} //class ends
+
 ?>
