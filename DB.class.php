@@ -7,18 +7,20 @@
      * @param Copyright © 2018 PyRu Inc.
      */
 	class DB{
-		private static $tableColumns; //splice first column i.e primary field
-		private $db;
-		private $table;
-		private $data;
-		private $encrypt 	= 0;
-		private $encryptKey = 'DEFAULT';
-		private $isEncryptColumns = 0;
-		private $encryptColumns = [];
-		private $dataKeys;
-		private $dataValues;
-		private $newValues;
-		private $response 	= [];
+		protected static $tableColumns; //splice first column i.e primary field
+		protected $db;
+		protected $table;
+		protected $data;
+		protected $encrypt 	= 0;
+		protected $encryptKey = 'DEFAULT';
+		protected $isEncryptColumns = 0;
+		protected $encryptColumns = [];
+		protected $dataKeys;
+		protected $dataValues;
+		protected $newValues;
+		protected $columns = [];
+		protected $condition = [];
+		protected $response= [];
 
 		public function connect($db){
 			$this->db = $db;
@@ -63,7 +65,7 @@
 				$this->encryptColumns[] = $encryptColumns;
 		}
 
-		public function insert(){
+		public function create(){
 			if(!$this->encrypt){
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
 				$dataValues = "AES_ENCRYPT('".implode("', '$this->encryptKey'), AES_ENCRYPT('", $this->dataValues)."', '$this->encryptKey')"; //comma and quoted values
@@ -169,6 +171,38 @@
 			        fputcsv($output, $row);
 			    }
 			}
+		}
+
+		public function columns($columns){
+			if(is_array($columns))
+				$this->columns = $columns;
+			else
+				$this->columns[] = $columns;
+		}
+
+		public function condition($condition){
+			if(is_array($condition))
+				$this->condition = $condition;
+			else
+				$this->condition[] = $condition;
+		}
+
+		public function read(){
+			if(!count($this->condition))
+				$condition = 1;
+			else
+				$condition = $this->condition;
+			$columns = implode(', ', $this->columns);
+			if($condition != 1){
+				$condition = implode(' AND ', $this->condition);
+			}
+			$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
+			$con = $this->db->prepare($query);
+			$con->execute();
+			while($row = $con->fetch(PDO::FETCH_ASSOC)){
+				$this->response[] = $row;
+			}
+			return $this->response;
 		}
 	} //class ends
 
