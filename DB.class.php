@@ -7,20 +7,20 @@
      * @param Copyright © 2018 PyRu Inc.
      */
 	class DB{
-		protected static $tableColumns; //splice first column i.e primary field
-		protected $db;
-		protected $table;
-		protected $data;
-		protected $encrypt 	= 0;
-		protected $encryptKey = 'DEFAULT';
-		protected $isEncryptColumns = 0;
-		protected $encryptColumns = [];
-		protected $dataKeys;
-		protected $dataValues;
-		protected $newValues;
-		protected $columns = [];
-		protected $condition = [];
-		protected $response= [];
+		private static $tableColumns; //splice first column i.e primary field
+		private $db;
+		private $table;
+		private $data;
+		private $encrypt 	= 0;
+		private $encryptKey = 'DEFAULT';
+		private $isEncryptColumns = 0;
+		private $encryptColumns = [];
+		private $dataKeys;
+		private $dataValues;
+		private $newValues;
+		private $columns = [];
+		private $condition = [];
+		private $response= [];
 
 		public function connect($db){
 			$this->db = $db;
@@ -66,12 +66,10 @@
 		}
 
 		public function create(){
-			if(!$this->encrypt){
+			if($this->encrypt){
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
 				$dataValues = "AES_ENCRYPT('".implode("', '$this->encryptKey'), AES_ENCRYPT('", $this->dataValues)."', '$this->encryptKey')"; //comma and quoted values
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-				$con 		= $this->db->prepare($query);
-				$con1 		= $con->execute();
 			}
 			if($this->encrypt && $this->isEncryptColumns){
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
@@ -85,17 +83,15 @@
 				
 				$dataValues = implode(', ', $dataValues);
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-				$con 		= $this->db->prepare($query);
-				$con1 		= $con->execute();
 			}
 
 			else{
 				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
 				$dataValues = '\''.implode('\', \'', $this->dataValues).'\''; //comma and quoted values
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-				$con 		= $this->db->prepare($query);
-				$con1 		= $con->execute();
 			}
+			$con 		= $this->db->prepare($query);
+			$con1 		= $con->execute();
 			if($con1)
 				return $this->response = ['status'=>'1', 'message'=>'Data Added Successfully'];
 			else
@@ -122,12 +118,13 @@
 
 		public function isExist(){
 			$dataKeys   	= implode(', ', $this->dataKeys); //comma separated keys
-			$len 			= sizeof($this->data);
-			$assignValues   = $this->dataKeys[0].' = "'.$this->dataValues[0].'"';
-			$condition 		= $this->dataKeys[0].' = "'.$this->dataValues[0].'"'; 
-			for($i=1;$i<$len;$i++){
-				$assignValues .= ', '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
-				$condition 	  .= ' OR '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
+			if(!count($this->condition))
+				$condition = 1;
+			else
+				$condition = $this->condition;
+			$columns = implode(', ', $this->columns);
+			if($condition != 1){
+				$condition = implode(' AND ', $this->condition);
 			}
 			$query 		= 'SELECT '.$dataKeys.' FROM '.$this->table.' WHERE  '.$condition;
 			$con = $this->db->prepare($query);
