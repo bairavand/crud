@@ -20,6 +20,7 @@
 		private $newValues;
 		private $columns = [];
 		private $condition = [];
+		private $logicOperator = 'AND';
 		private $response= [];
 
 		public function connect($db){
@@ -93,40 +94,36 @@
 			$con 		= $this->db->prepare($query);
 			$con1 		= $con->execute();
 			if($con1)
-				return $this->response = ['status'=>'1', 'message'=>'Data Added Successfully'];
+				return $this->response = ['result'=>'1', 'message'=>'Data Added Successfully'];
 			else
-				return $this->response = ['status'=>'0', 'message'=>'Error Occured'];
+				return $this->response = ['result'=>'0', 'message'=>'Error Occured'];
 		}
 
 		public function update(){
-			if($this->isExist()){
 				$len 			= sizeof($this->data);
 				$assignValues   = $this->dataKeys[0].' = "'.$this->dataValues[0].'"';
-				$condition 		= $this->dataKeys[0].' = "'.$this->dataValues[0].'"'; 
+				// $condition 		= $this->dataKeys[0].' = "'.$this->dataValues[0].'"';
+				if(!count($this->condition))
+					$condition = 1;
+				if($this->condition != 1)
+					$condition = implode(' '.$this->logicOperator.' ', $this->condition);
 				for($i=1;$i<$len;$i++){
 					$assignValues .= ', '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
-					$condition 	  .= ' OR '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
+					// $condition 	  .= ' OR '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
 				}
 				$query = 'UPDATE '.$this->table.' SET '.$assignValues.' WHERE '.$condition;
 				$con   = $this->db->prepare($query);
 				$con1  = $con->execute();
-				return $con1 ? $this->response = ['status'=>'1', 'message'=>'Values Updated Successfully'] : $this->$response = ['status'=>'0', 'message'=>'Error Occured'];
-			}else{
-				echo "<p style='color: red;'>Data not exist</p>";
-			}
+				return $con1 ? $this->response = ['result'=>'1', 'message'=>'Updated successfully'] : $this->response = ['result'=>'0', 'message'=>'Update Failed'];
 		}
 
 		public function isExist(){
-			$dataKeys   	= implode(', ', $this->dataKeys); //comma separated keys
+			$columns = implode(', ', $this->columns);
 			if(!count($this->condition))
 				$condition = 1;
-			else
-				$condition = $this->condition;
-			$columns = implode(', ', $this->columns);
-			if($condition != 1){
-				$condition = implode(' AND ', $this->condition);
-			}
-			$query 		= 'SELECT '.$dataKeys.' FROM '.$this->table.' WHERE  '.$condition;
+			if($this->condition != 1)
+				$condition = implode(' '.$this->logicOperator.' ', $this->condition);
+			$query 		= 'SELECT '.$columns.' FROM '.$this->table.' WHERE  '.$condition;
 			$con = $this->db->prepare($query);
 			$con->execute();
 			$rowCount = $con->rowCount();
@@ -143,9 +140,9 @@
 				$con = $db->prepare($query);
 				$response = $con->execute();
 				if($response){
-					return self::$response = ['status'=>'1', 'message'=>'Deleted successfully'];
+					return self::$response = ['result'=>'1', 'message'=>'Deleted successfully'];
 				}else{
-					return self::$response = ['status'=>'0', 'message'=>'Error Occured'];
+					return self::$response = ['result'=>'0', 'message'=>'Error Occured'];
 				}
 			}
 		}
@@ -170,29 +167,27 @@
 			}
 		}
 
-		public function columns($columns){
+		public function columns($columns = '*'){
 			if(is_array($columns))
 				$this->columns = $columns;
 			else
 				$this->columns[] = $columns;
 		}
 
-		public function condition($condition){
-			if(is_array($condition))
-				$this->condition = $condition;
-			else
-				$this->condition[] = $condition;
+		public function condition($column, $operator = '=', $value){
+			$this->condition[] = $column.$operator.'\''.$value.'\'';	
+		}
+
+		public function conditionType($logicOperator){
+			$this->logicOperator = $logicOperator;
 		}
 
 		public function read(){
+			$columns = implode(', ', $this->columns);
 			if(!count($this->condition))
 				$condition = 1;
-			else
-				$condition = $this->condition;
-			$columns = implode(', ', $this->columns);
-			if($condition != 1){
-				$condition = implode(' AND ', $this->condition);
-			}
+			if($this->condition != 1)
+				$condition = implode(' '.$this->logicOperator.' ', $this->condition);
 			$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
 			$con = $this->db->prepare($query);
 			$con->execute();
