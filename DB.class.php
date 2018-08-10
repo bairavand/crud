@@ -21,7 +21,7 @@
 		private $columns = [];
 		private $condition = [];
 		private $logicOperator = 'AND';
-		private $response= [];
+		// private $response= [];
 
 		public function connect($db){
 			$this->db = $db;
@@ -91,12 +91,7 @@
 				$dataValues = '\''.implode('\', \'', $this->dataValues).'\''; //comma and quoted values
 				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
 			}
-			$con 		= $this->db->prepare($query);
-			$con1 		= $con->execute();
-			if($con1)
-				return $this->response = ['result'=>'1', 'message'=>'Data Added Successfully'];
-			else
-				return $this->response = ['result'=>'0', 'message'=>'Error Occured'];
+			$this->put($query);
 		}
 
 		public function update(){
@@ -112,9 +107,10 @@
 					// $condition 	  .= ' OR '.$this->dataKeys[$i].' = "'.$this->dataValues[$i].'"';
 				}
 				$query = 'UPDATE '.$this->table.' SET '.$assignValues.' WHERE '.$condition;
-				$con   = $this->db->prepare($query);
+				$this->put($query);
+				/*$con   = $this->db->prepare($query);
 				$con1  = $con->execute();
-				return $con1 ? $this->response = ['result'=>'1', 'message'=>'Updated successfully'] : $this->response = ['result'=>'0', 'message'=>'Update Failed'];
+				return $con1 ? $response = ['result'=>'1'] : $response = ['result'=>'0'];*/
 		}
 
 		public function isExist(){
@@ -124,13 +120,18 @@
 			if($this->condition != 1)
 				$condition = implode(' '.$this->logicOperator.' ', $this->condition);
 			$query 		= 'SELECT '.$columns.' FROM '.$this->table.' WHERE  '.$condition;
-			$con = $this->db->prepare($query);
-			$con->execute();
-			$rowCount = $con->rowCount();
-			if($rowCount >= 1)
-				return 1;
-			else
-				return 0;
+			try{
+				$con = $this->db->prepare($query);
+				$con->execute();
+				$rowCount = $con->rowCount();
+				if($rowCount >= 1)
+					return 1;
+				else
+					return 0;
+			}catch(Exception $e){
+				echo 'Query Error: '.$query.'<br/>';
+				echo $e->getMessage();
+			}
 		}
 
 		public function delete($db, $table, $values){
@@ -138,12 +139,8 @@
 				$condition = self::$values_keys[0].' = "'.self::$values_values[0].'"';
 				$query 	= 'DELETE FROM '.$table.' WHERE '.$condition;
 				$con = $db->prepare($query);
-				$response = $con->execute();
-				if($response){
-					return self::$response = ['result'=>'1', 'message'=>'Deleted successfully'];
-				}else{
-					return self::$response = ['result'=>'0', 'message'=>'Error Occured'];
-				}
+				$output = $con->execute();
+				return $output ? $response = ['result'=>'1'] : $response = ['result'=>'0'];
 			}
 		}
 
@@ -174,8 +171,8 @@
 				$this->columns[] = $columns;
 		}
 
-		public function condition($column, $operator = '=', $value){
-			$this->condition[] = $column.$operator.'\''.$value.'\'';	
+		public function condition($column, $operator = '', $value){
+			$this->condition[] = $column.' '.$operator.' \''.$value.'\'';	
 		}
 
 		public function conditionType($logicOperator){
@@ -189,13 +186,44 @@
 			if($this->condition != 1)
 				$condition = implode(' '.$this->logicOperator.' ', $this->condition);
 			$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
-			$con = $this->db->prepare($query);
-			$con->execute();
-			while($row = $con->fetch(PDO::FETCH_ASSOC)){
-				$this->response[] = $row;
-			}
-			return $this->response;
+			return $this->get($query);
 		}
+		public function get($query){
+			try{
+				$con = $this->db->prepare($query);
+				$con->execute();
+				// print_r($con->errorInfo());
+				$response = [];
+				while($row = $con->fetch(PDO::FETCH_ASSOC)){
+					$response[] = $row;
+				}
+				return $response;
+			}catch(Exception $e){
+				echo 'Query Error: '.$query.'<br/>';
+				echo $e->getMessage();
+			}
+		}
+		public function put($query){
+			try{
+				$con 		= $this->db->prepare($query);
+				$con1 		= $con->execute();
+				if($con1)
+					return $response = ['result'=>'1'];
+				else
+					return $response = ['result'=>'0'];
+			}catch(Exception $e){
+				echo 'Query Error: '.$query.'<br/>';
+				echo $e->getMessage();
+			}
+		}
+		// public function errThrow($query){
+		// 	$query = trim(preg_replace('/\s+/', ' ',trim($query)));
+		// 	$queryResult = mysqli_query($this->db, $query);
+		// 	print_r($queryResult);
+		// 	exit;
+		// 	if(!$queryResult)
+		// 		echo "Error in: ".mysqli_error($this->db);
+		// }
 	} //class ends
 
 ?>
