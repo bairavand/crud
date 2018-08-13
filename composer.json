@@ -1,33 +1,13 @@
 {
     "name": "pyru/crud",
-    "type": "library",
-    "version": "1.0",
-    "description": "A simple PHP library for MySQL CRUD operation",
-    "keywords": ["CRUD","MySQL", "PHP"],
-    "homepage": "https://github.com/pairavanvvl/crud",
-    "license": "MIT",
+    "description": "A simple library for MySQL CRUD operation in PHP",
+    "type": "Library",
     "authors": [
         {
             "name": "Bairavan D",
-            "email": "pairavan96@gmail.com",
-            "homepage": "http://androidtrickfree.tk",
-            "role": "Developer"
+            "email": "pairavan96@gmail.com"
         }
     ],
-    "require": {
-    },
-    "autoload": {
-        "psr-0": {
-            "Monolog": "src"
-        }
-    },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "1.0-dev"
-     }
-   },
-  "replace": {
-    "pyru/crud": "1.0"
-  }
+    "require": {}
 }
 
