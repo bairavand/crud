@@ -8,6 +8,12 @@
             "email": "pairavan96@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "pyru/crud: *"
+    }
+    "autoload": {
+        "psr-4": {
+            "pyru\\crud": ""
+        }
+    }
 }
-
