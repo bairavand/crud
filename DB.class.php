@@ -14,13 +14,14 @@
 		private $encrypt 	= 0;
 		private $encryptKey = 'DEFAULT';
 		private $isEncryptColumns = 0;
-		private $encryptColumns = [];
+		private $encryptColumns = array();
 		private $dataKeys;
 		private $dataValues;
 		private $newValues;
-		private $columns = [];
-		private $condition = [];
+		private $columns = array();
+		private $condition = array();
 		private $logicOperator = 'AND';
+		private $joinData = array();
 		// private $response= [];
 
 		public function connect($db){
@@ -199,6 +200,16 @@
 			$this->logicOperator = $logicOperator;
 		}
 
+		public function join($joinTable, $field1, $operator = '=', $field2, $type="JOIN"){
+			$this->joinData = array(
+				'joinTable' => $joinTable,
+				'field1'	=>$field1,
+				'operator'	=>$operator,
+				'field2'	=>$field2,
+				'type'		=>$type
+			);
+		}
+
 		public function read(){
 			try {
 				$columns = implode(', ', $this->columns);
@@ -206,7 +217,10 @@
 					$condition = 1;
 				if($this->condition != 1)
 					$condition = implode(' '.$this->logicOperator.' ', $this->condition);
-				$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
+				if (count($this->joinData))
+					$query = 'SELECT '.$columns.' FROM '.$this->table.' '.$this->joinData['type'].' '.$this->joinData['joinTable'].' ON '.$this->joinData['field1'].$this->joinData['operator'].$this->joinData['field2'].' WHERE '.$condition;
+				else
+					$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
 				return $this->get($query);
 			} catch(Exception $e){
 				echo '<b>Query Error:</b> '.$query.'<br/>';
