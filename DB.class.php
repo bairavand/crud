@@ -1,10 +1,10 @@
 <?php
 	/**
-     * @param Library for CRUD operation
+     * @package Library for CRUD operation
      *********************************************************************************
-     * @param v2.1 Beta
+     * @param v2.5 Beta
      *********************************************************************************
-     * @param Copyright © 2018 PyRu Inc.
+     * @copyright © 2018 PyRu Inc.
      */
 	class DB{
 		private static $tableColumns; //splice first column i.e primary field
@@ -32,15 +32,20 @@
 		}
 
 		public static function getTableColumns($table){
-			$query 			 = 'SHOW COLUMNS FROM '.$table;
-			$con 			 = $this->db->prepare($query);
-			$con->execute();
-			$getTableColumns = [];
-			while($row = $con->fetch(PDO::FETCH_ASSOC)){
-				$getTableColumns[] = ($row['Field']);
+			try {
+				$query 			 = 'SHOW COLUMNS FROM '.$table;
+				$con 			 = $this->db->prepare($query);
+				$con->execute();
+				$getTableColumns = [];
+				while($row = $con->fetch(PDO::FETCH_ASSOC)){
+					$getTableColumns[] = ($row['Field']);
+				}
+				array_splice($getTableColumns, 0, 1);
+				return self::$tableColumns = $getTableColumns;
+			} catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
 			}
-			array_splice($getTableColumns, 0, 1);
-			return self::$tableColumns = $getTableColumns;
 		}
 
 		public function data($data){
@@ -67,34 +72,40 @@
 		}
 
 		public function create(){
-			if($this->encrypt){
-				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
-				$dataValues = "AES_ENCRYPT('".implode("', '$this->encryptKey'), AES_ENCRYPT('", $this->dataValues)."', '$this->encryptKey')"; //comma and quoted values
-				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-			}
-			if($this->encrypt && $this->isEncryptColumns){
-				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
-				$dataValues = [];
-				foreach($this->dataKeys as $dataKey){
-					if(in_array($dataKey, $this->encryptColumns))
-						$dataValues[] = 'AES_ENCRYPT(\''.$this->data[$dataKey].'\', \''.$this->encryptKey.'\')';
-					else
-						$dataValues[] = '\''.$this->data[$dataKey].'\'';
+			try {
+				if($this->encrypt){
+					$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
+					$dataValues = "AES_ENCRYPT('".implode("', '$this->encryptKey'), AES_ENCRYPT('", $this->dataValues)."', '$this->encryptKey')"; //comma and quoted values
+					$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
 				}
-				
-				$dataValues = implode(', ', $dataValues);
-				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
-			}
+				if($this->encrypt && $this->isEncryptColumns){
+					$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
+					$dataValues = [];
+					foreach($this->dataKeys as $dataKey){
+						if(in_array($dataKey, $this->encryptColumns))
+							$dataValues[] = 'AES_ENCRYPT(\''.$this->data[$dataKey].'\', \''.$this->encryptKey.'\')';
+						else
+							$dataValues[] = '\''.$this->data[$dataKey].'\'';
+					}
+					
+					$dataValues = implode(', ', $dataValues);
+					$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
+				}
 
-			else{
-				$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
-				$dataValues = '\''.implode('\', \'', $this->dataValues).'\''; //comma and quoted values
-				$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
+				else{
+					$dataKeys   = implode(', ', $this->dataKeys); //comma separated keys
+					$dataValues = '\''.implode('\', \'', $this->dataValues).'\''; //comma and quoted values
+					$query 		= 'INSERT INTO '.$this->table.'('.$dataKeys.') VALUES('.$dataValues.')';
+				}
+				$this->put($query);
+			} catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
 			}
-			$this->put($query);
 		}
 
 		public function update(){
+			try {
 				$len 			= sizeof($this->data);
 				$assignValues   = $this->dataKeys[0].' = "'.$this->dataValues[0].'"';
 				// $condition 		= $this->dataKeys[0].' = "'.$this->dataValues[0].'"';
@@ -111,6 +122,10 @@
 				/*$con   = $this->db->prepare($query);
 				$con1  = $con->execute();
 				return $con1 ? $response = ['result'=>'1'] : $response = ['result'=>'0'];*/
+			} catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
+			}
 		}
 
 		public function isExist(){
@@ -128,19 +143,24 @@
 					return 1;
 				else
 					return 0;
-			}catch(Exception $e){
-				echo 'Query Error: '.$query.'<br/>';
+			} catch(Exception $e){
+				echo '<b>Query Error</b>: '.$query.'<br/>';
 				echo $e->getMessage();
 			}
 		}
 
 		public function delete($db, $table, $values){
-			if(self::isExist($db, $table, $values)){
-				$condition = self::$values_keys[0].' = "'.self::$values_values[0].'"';
-				$query 	= 'DELETE FROM '.$table.' WHERE '.$condition;
-				$con = $db->prepare($query);
-				$output = $con->execute();
-				return $output ? $response = ['result'=>'1'] : $response = ['result'=>'0'];
+			try {
+				if(self::isExist($db, $table, $values)){
+					$condition = self::$values_keys[0].' = "'.self::$values_values[0].'"';
+					$query 	= 'DELETE FROM '.$table.' WHERE '.$condition;
+					$con = $db->prepare($query);
+					$output = $con->execute();
+					return $output ? $response = ['result'=>'1'] : $response = ['result'=>'0'];
+				}
+			} catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
 			}
 		}
 
@@ -180,13 +200,18 @@
 		}
 
 		public function read(){
-			$columns = implode(', ', $this->columns);
-			if(!count($this->condition))
-				$condition = 1;
-			if($this->condition != 1)
-				$condition = implode(' '.$this->logicOperator.' ', $this->condition);
-			$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
-			return $this->get($query);
+			try {
+				$columns = implode(', ', $this->columns);
+				if(!count($this->condition))
+					$condition = 1;
+				if($this->condition != 1)
+					$condition = implode(' '.$this->logicOperator.' ', $this->condition);
+				$query = 'SELECT '.$columns.' FROM '.$this->table.' WHERE '.$condition;
+				return $this->get($query);
+			} catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
+			}
 		}
 		public function get($query){
 			try{
@@ -199,10 +224,24 @@
 				}
 				return $response;
 			}catch(Exception $e){
-				echo 'Query Error: '.$query.'<br/>';
+				echo '<b>Query Error:</b> '.$query.'<br/>';
 				echo $e->getMessage();
 			}
 		}
+
+		public function getSingle($query){
+			try{
+				$con = $this->db->prepare($query.' LIMIT 1');
+				$con->execute();
+				// print_r($con->errorInfo());
+				while($row = $con->fetch(PDO::FETCH_ASSOC))
+				return $row;
+			}catch(Exception $e){
+				echo '<b>Query Error:</b> '.$query.'<br/>';
+				echo $e->getMessage();
+			}
+		}
+
 		public function put($query){
 			try{
 				$con 		= $this->db->prepare($query);
@@ -212,18 +251,10 @@
 				else
 					return $response = ['result'=>'0'];
 			}catch(Exception $e){
-				echo 'Query Error: '.$query.'<br/>';
+				echo '<b>Query Error:</b> '.$query.'<br/>';
 				echo $e->getMessage();
 			}
 		}
-		// public function errThrow($query){
-		// 	$query = trim(preg_replace('/\s+/', ' ',trim($query)));
-		// 	$queryResult = mysqli_query($this->db, $query);
-		// 	print_r($queryResult);
-		// 	exit;
-		// 	if(!$queryResult)
-		// 		echo "Error in: ".mysqli_error($this->db);
-		// }
 	} //class ends
 
 ?>
